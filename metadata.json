@@ -1,0 +1,5 @@
+{
+  "name": "Copy of CityConnect: Offline Transport AI",
+  "description": "An offline-first transport tracker for urban areas with unreliable internet. It provides route finding, live tracking, offline ticketing, and an AI assistant for passengers, alongside a comprehensive dashboard for transport authorities.",
+  "requestFramePermissions": []
+}

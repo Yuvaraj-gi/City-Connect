@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CityConnect - Transport Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+          },
+        },
+      }
+    </script>
+    <script src="https://unpkg.com/recharts/umd/Recharts.min.js"></script>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.1.1/",
+    "react": "https://aistudiocdn.com/react@^19.1.1",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/"
+  }
+}
+</script>
+<style>
+      body {
+        font-family: 'Inter', sans-serif;
+      }
+      /* Custom scrollbar for Webkit browsers */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #f1f5f9; /* slate-100 */
+      }
+      .dark ::-webkit-scrollbar-track {
+        background: #0f172a; /* slate-900 */
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1; /* slate-300 */
+        border-radius: 10px;
+      }
+      .dark ::-webkit-scrollbar-thumb {
+        background: #334155; /* slate-700 */
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8; /* slate-400 */
+      }
+      .dark ::-webkit-scrollbar-thumb:hover {
+        background: #475569; /* slate-600 */
+      }
+      /* Animation for selected map pin */
+      @keyframes pulse-animation {
+        0% {
+          box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.7);
+        }
+        70% {
+          box-shadow: 0 0 0 15px rgba(79, 70, 229, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
+        }
+      }
+      .pulse-animate {
+        animation: pulse-animation 2s infinite;
+      }
+      /* Animation for detail panel content */
+      @keyframes content-fade-in {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .content-animate-in {
+        animation: content-fade-in 0.4s ease-out forwards;
+      }
+      /* Emergency Mode styles */
+      .emergency-mode body,
+      .emergency-mode #root {
+          background-color: #000000 !important;
+          color: #cccccc !important;
+      }
+      .emergency-mode .bg-white, 
+      .emergency-mode .dark\:bg-slate-800, 
+      .emergency-mode .dark\:bg-slate-900 {
+          background-color: #000000 !important;
+          border-color: #333 !important;
+      }
+      .emergency-mode .bg-slate-50, 
+      .emergency-mode .dark\:bg-slate-800\/50,
+      .emergency-mode .dark\:bg-slate-700,
+      .emergency-mode .dark\:bg-slate-900,
+      .emergency-mode .dark\:bg-slate-800\/80 {
+           background-color: #000000 !important;
+      }
+       .emergency-mode .text-slate-800, 
+       .emergency-mode .dark\:text-slate-100,
+       .emergency-mode .text-slate-900,
+       .emergency-mode .dark\:text-slate-200,
+       .emergency-mode .text-slate-700 {
+           color: #f1f5f9 !important; /* slate-100 */
+       }
+       .emergency-mode .text-slate-500, 
+       .emergency-mode .dark\:text-slate-400,
+       .emergency-mode .text-slate-600 {
+           color: #94a3b8 !important; /* slate-400 */
+       }
+      .emergency-mode .shadow-md, 
+      .emergency-mode .shadow-lg, 
+      .emergency-mode .shadow-sm,
+      .emergency-mode .shadow-xl,
+      .emergency-mode .shadow-2xl {
+          box-shadow: none !important;
+          border: 1px solid #333;
+      }
+      .emergency-mode button, 
+      .emergency-mode input,
+      .emergency-mode select,
+      .emergency-mode a,
+      .emergency-mode div[class*="border"] {
+          border-color: #475569 !important; /* slate-600 */
+      }
+      .emergency-mode .text-indigo-600,
+      .emergency-mode .dark\:text-indigo-400 {
+          color: #a5b4fc !important; /* indigo-300 */
+      }
+      .emergency-mode .bg-indigo-600 {
+          background-color: transparent !important;
+          border: 1px solid #818cf8 !important; /* indigo-400 */
+          color: #c7d2fe !important; /* indigo-200 */
+      }
+      .emergency-mode img {
+        display: none !important;
+      }
+    </style>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="antialiased bg-slate-100 text-slate-700 font-sans dark:bg-slate-900 dark:text-slate-300">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
