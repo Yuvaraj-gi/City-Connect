@@ -1,6 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { vehicles, routes } from '../../data';
-import { Vehicle, Route, LiveVehicle } from '../../types';
+// components/authority/LiveTrackingView.tsx - FINAL LAYOUT & FUNCTIONALITY FIX
+
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { routes } from '../../data';
+import { LiveVehicle, Route } from '../../types';
 import VehicleListPanel from './VehicleListPanel';
 import VehicleDetailsPanel from './VehicleDetailsPanel';
 import LiveTrackingMap from './LiveTrackingMap';
@@ -13,37 +15,36 @@ interface LiveTrackingViewProps {
 
 const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({ initialVehicleId }) => {
     const [liveVehicles, setLiveVehicles] = useState<LiveVehicle[]>([]);
+    const [allRoutes, setAllRoutes] = useState<Route[]>(routes); // Use dummy routes for now
     const [isLoading, setIsLoading] = useState(true);
-    const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
+    const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(initialVehicleId);
 
     useEffect(() => {
-        // Set initial vehicle ID only once
-        if (initialVehicleId) {
-            setSelectedVehicleId(initialVehicleId);
-        } else if (vehicles.length > 0) {
-            setSelectedVehicleId(vehicles[0].id);
-        }
-    }, [initialVehicleId]);
-
-    useEffect(() => {
-        const unsubscribe = subscribeToVehicleUpdates(updatedVehicles => {
-            setLiveVehicles(updatedVehicles);
-            if (isLoading) {
-                setIsLoading(false);
+        let isMounted = true;
+        const handleVehicleUpdate = (updatedVehicles: LiveVehicle[]) => {
+            if (isMounted) {
+                setLiveVehicles(updatedVehicles);
+                if (isLoading) setIsLoading(false);
             }
-        });
-        return () => unsubscribe();
+        };
+
+        const unsubscribe = subscribeToVehicleUpdates(handleVehicleUpdate);
+
+        return () => {
+            isMounted = false;
+            unsubscribe();
+        };
     }, [isLoading]);
 
-    const handleVehicleSelect = (vehicle: Vehicle | null) => {
-        setSelectedVehicleId(prevId => 
-            prevId === vehicle?.id ? null : vehicle?.id || null
-        );
-    };
+    // THE FIX FOR THE PANEL: By using useCallback, we prevent unnecessary re-renders
+    // that were breaking the details panel.
+    const handleVehicleSelect = useCallback((vehicleId: string | null) => {
+        setSelectedVehicleId(prevId => (prevId === vehicleId ? null : vehicleId));
+    }, []);
 
-    const handleCloseDetails = () => {
+    const handleCloseDetails = useCallback(() => {
         setSelectedVehicleId(null);
-    }
+    }, []);
 
     const selectedVehicle = useMemo(() => {
         return liveVehicles.find(v => v.id === selectedVehicleId) || null;
@@ -59,18 +60,18 @@ const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({ initialVehicleId })
     }
 
     return (
-        <div className="relative flex flex-col lg:flex-row flex-1 overflow-hidden h-full">
+        <div className="absolute inset-0 flex flex-col lg:flex-row">
             <VehicleListPanel 
                 vehicles={liveVehicles}
-                routes={routes}
+                routes={allRoutes}
                 selectedVehicle={selectedVehicle}
                 onVehicleSelect={handleVehicleSelect}
             />
-            <div className="h-2/3 lg:h-full flex-1 flex relative overflow-hidden">
+            <div className="flex-1 relative">
                 <LiveTrackingMap 
                     selectedVehicle={selectedVehicle} 
                     vehicles={liveVehicles} 
-                    routes={routes}
+                    routes={allRoutes}
                     onVehicleSelect={handleVehicleSelect}
                 />
             </div>

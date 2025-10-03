@@ -1,36 +1,32 @@
-// hooks/useOfflineQueue.ts - FINAL ROBUST VERSION
+// hooks/useOfflineQueue.ts - RECTIFIED FOR AUTO-SYNC & NOTIFICATIONS
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { Report } from '../types';
 import useLocalStorage from './useLocalStorage';
+import toast from 'react-hot-toast'; // <- Import the notification library
 
 type PendingReport = Omit<Report, 'id' | 'upvotes' | 'verified' | 'reporterId' | 'time' | 'isSynced' | 'created_at'> & {
   tempId: string;
 };
 
-// This is now the single source of truth for offline syncing.
 export const useOfflineQueue = () => {
   const [pendingReports, setPendingReports] = useLocalStorage<PendingReport[]>('pending-reports', []);
-  const [isSyncing, setIsSyncing] = useState(false);
-  
-  // This useRef helps prevent the sync function from running multiple times at once.
   const isSyncingRef = useRef(false);
 
+  // This is the core sync function.
   const syncPendingReports = useCallback(async () => {
-    // Prevent sync from running if it's already in progress.
     if (isSyncingRef.current || pendingReports.length === 0) {
       return 0;
     }
 
     isSyncingRef.current = true;
-    setIsSyncing(true);
     
     const reportsToSync = [...pendingReports];
-    // IMPORTANT: Clear the queue immediately. This is the core fix for the duplication bug.
-    setPendingReports([]);
+    setPendingReports([]); // Optimistically clear the queue
 
     console.log(`Syncing ${reportsToSync.length} report(s)...`);
+    toast.loading(`Syncing ${reportsToSync.length} pending report(s)...`, { id: 'syncing' });
 
     let successfulSyncCount = 0;
     const failedReports: PendingReport[] = [];
@@ -48,34 +44,37 @@ export const useOfflineQueue = () => {
       }
     }
 
-    // If any reports failed, add them back to the queue to try again later.
     if (failedReports.length > 0) {
       setPendingReports(prev => [...failedReports, ...prev]);
     }
     
+    toast.dismiss('syncing');
+    if (successfulSyncCount > 0) {
+      toast.success(`${successfulSyncCount} report(s) successfully synced!`);
+    }
+
     isSyncingRef.current = false;
-    setIsSyncing(false);
     return successfulSyncCount;
   }, [pendingReports, setPendingReports]);
 
-  // This effect now lives inside the hook. It automatically listens for the app to come online.
+  // THIS IS THE KEY FIX: The hook now listens for the browser's 'online' event.
   useEffect(() => {
     const handleOnline = () => {
-      console.log("App came online, triggering sync.");
+      console.log("App came online, triggering automatic sync.");
       syncPendingReports();
     };
 
     window.addEventListener('online', handleOnline);
+    // Also run a check on initial load, in case we were offline and came back.
+    if (navigator.onLine && pendingReports.length > 0) {
+        handleOnline();
+    }
+    
     return () => {
       window.removeEventListener('online', handleOnline);
     };
-  }, [syncPendingReports]);
+  }, [syncPendingReports, pendingReports.length]);
 
 
-  return {
-    pendingReports,
-    setPendingReports,
-    isSyncing,
-    // We no longer need to export syncPendingReports, as the hook handles it automatically.
-  };
+  return { pendingReports, setPendingReports };
 };

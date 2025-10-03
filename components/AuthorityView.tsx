@@ -1,3 +1,5 @@
+// AuthorityView.tsx - RECTIFIED (Driver Mode Removed)
+
 import React, { useState } from 'react';
 import { UserRole, AuthorityViewType, AuthorityNavItem } from '../types';
 import { AuthorityHeader } from './authority/AuthorityHeader';
@@ -12,9 +14,7 @@ import CogIcon from './icons/CogIcon';
 import GlobeAltIcon from './icons/GlobeAltIcon';
 import VehiclesTableView from './authority/VehiclesTableView';
 import LiveTrackingView from './authority/LiveTrackingView';
-import DriverModeView from './authority/DriverModeView';
-import SteeringWheelIcon from './icons/SteeringWheelIcon';
-
+// NOTE: DriverModeView and its icon are no longer imported
 
 interface AuthorityViewProps {
     onRoleChange: (role: UserRole) => void;
@@ -33,16 +33,17 @@ const AuthorityView: React.FC<AuthorityViewProps> = ({ onRoleChange, onSignOut, 
     setActiveView('live-tracking');
   };
 
+  // THE FIX IS HERE: The "Driver Mode" item has been removed from this list.
   const navItems: AuthorityNavItem[] = [
     { id: 'analytics', icon: <ChartBarIcon />, label: 'Analytics' },
     { id: 'vehicles', icon: <TruckIcon />, label: 'Vehicles' },
     { id: 'live-tracking', icon: <GlobeAltIcon />, label: 'Live Tracking' },
     { id: 'chat', icon: <ChatIcon />, label: 'Chat' },
-    { id: 'driver-mode', icon: <SteeringWheelIcon />, label: 'Driver Mode' },
     { id: 'settings', icon: <CogIcon />, label: 'Settings' },
   ];
   
-  const needsPadding = ['analytics', 'vehicles', 'settings', 'driver-mode'].includes(activeView);
+  // THE FIX IS HERE: We no longer need to check for 'driver-mode'
+  const needsPadding = ['analytics', 'vehicles', 'settings'].includes(activeView);
 
   const renderActiveView = () => {
     switch (activeView) {
@@ -52,17 +53,15 @@ const AuthorityView: React.FC<AuthorityViewProps> = ({ onRoleChange, onSignOut, 
             return <VehiclesTableView onTrackVehicle={handleTrackVehicle} />;
         case 'live-tracking':
             const initialVehicleId = vehicleToTrack;
-            // Reset after consumption
             if (vehicleToTrack) setVehicleToTrack(null);
             return <LiveTrackingView initialVehicleId={initialVehicleId} />;
         case 'chat':
             return <ChatView />;
-        case 'driver-mode':
-            return <DriverModeView />;
+        // THE FIX IS HERE: The case for 'driver-mode' has been removed.
         case 'settings':
             return <SettingsView theme={theme} setTheme={setTheme} />;
         default:
-            return null;
+            return <Dashboard />; // Default to dashboard to prevent errors
     }
   }
 
@@ -83,12 +82,12 @@ const AuthorityView: React.FC<AuthorityViewProps> = ({ onRoleChange, onSignOut, 
           setTheme={setTheme}
           onMenuClick={() => setIsSidebarOpen(true)}
         />
-        <main className={`flex-1 overflow-y-auto ${needsPadding ? 'p-4 sm:p-6 lg:p-8' : ''}`}>
-            {renderActiveView()}
-        </main>
+        <div className="flex-1 overflow-hidden relative">
+            <main className={`absolute inset-0 overflow-y-auto ${needsPadding ? 'p-4 sm:p-6 lg:p-8' : ''}`}>
+                {renderActiveView()}
+            </main>
+        </div>
       </div>
-
-      {/* Bottom Navigation for Mobile (outside of the flex-col div to be fixed) */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around z-20 dark:bg-slate-800 dark:border-slate-700">
         {navItems.map(item => (
             <button 

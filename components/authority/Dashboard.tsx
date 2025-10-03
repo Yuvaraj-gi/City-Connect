@@ -1,6 +1,11 @@
-import React, { useState, useEffect } from 'react';
+// components/authority/Dashboard.tsx - FINAL SIMPLIFIED VERSION
+
+import React from 'react';
+// THE FIX IS HERE: We now import the chart components directly from the library.
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { kpis, revenueData, passengerVolumeData } from '../../data';
 
+// KpiCard component is unchanged and correct.
 const KpiCard: React.FC<{ title: string; value: string; change: string; changeType: 'increase' | 'decrease' }> = ({ title, value, change, changeType }) => {
   const isIncrease = changeType === 'increase';
   return (
@@ -16,86 +21,56 @@ const KpiCard: React.FC<{ title: string; value: string; change: string; changeTy
 };
 
 const Dashboard: React.FC = () => {
-  const [recharts, setRecharts] = useState<any>(null);
+  // We check for dark mode to style the chart text correctly.
+  const isDarkMode = document.documentElement.classList.contains('dark');
+  const chartTextColor = isDarkMode ? '#cbd5e1' : '#64748b';
+  const chartGridColor = isDarkMode ? '#334155' : '#e2e8f0';
 
-  useEffect(() => {
-    // Check if Recharts is already loaded
-    if ((window as any).Recharts) {
-      setRecharts((window as any).Recharts);
-      return;
-    }
-
-    // If not, poll for it, as it's loaded from a CDN script
-    const interval = setInterval(() => {
-      if ((window as any).Recharts) {
-        setRecharts((window as any).Recharts);
-        clearInterval(interval);
-      }
-    }, 100);
-
-    // Cleanup on component unmount
-    return () => clearInterval(interval);
-  }, []);
-  
-  // Conditionally render a loading state for charts
-  const renderCharts = () => {
-    if (!recharts) {
-      return (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-100 dark:border-slate-700 h-96 flex items-center justify-center">
-                <p className="text-slate-500 dark:text-slate-400">Loading chart...</p>
-            </div>
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-100 dark:border-slate-700 h-96 flex items-center justify-center">
-                <p className="text-slate-500 dark:text-slate-400">Loading chart...</p>
-            </div>
-        </div>
-      );
-    }
-    
-    // Once loaded, destructure and render the charts
-    const { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } = recharts;
-
-    return (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="bg-white p-6 rounded-xl shadow-lg border border-slate-100 h-96 dark:bg-slate-800 dark:border-slate-700">
-            <h4 className="font-bold text-lg text-slate-700 mb-4 dark:text-slate-200">Monthly Revenue (in ₹1000s)</h4>
-            <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={revenueData} margin={{ top: 5, right: 20, left: -10, bottom: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="revenue" fill="#4F46E5" name="Revenue (₹)" />
-                </BarChart>
-            </ResponsiveContainer>
-            </div>
-            <div className="bg-white p-6 rounded-xl shadow-lg border border-slate-100 h-96 dark:bg-slate-800 dark:border-slate-700">
-            <h4 className="font-bold text-lg text-slate-700 mb-4 dark:text-slate-200">Daily Passenger Volume</h4>
-            <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={passengerVolumeData} margin={{ top: 5, right: 20, left: -10, bottom: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="day" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="passengers" stroke="#10b981" strokeWidth={2} name="Passengers" />
-                </LineChart>
-            </ResponsiveContainer>
-            </div>
-      </div>
-    )
-  }
+  // THE FIX: The entire complex useEffect and useState for loading is GONE.
+  // It's no longer needed because the library is imported directly.
 
   return (
     <div className="space-y-8">
-      {/* KPIs */}
+      {/* KPIs Section */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {kpis.map(kpi => <KpiCard key={kpi.title} {...kpi} />)}
       </div>
 
-      {/* Charts */}
-      {renderCharts()}
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="bg-white p-6 rounded-xl shadow-lg border border-slate-100 h-96 dark:bg-slate-800 dark:border-slate-700">
+              <h4 className="font-bold text-lg text-slate-700 mb-4 dark:text-slate-200">Monthly Revenue (in ₹1000s)</h4>
+              <ResponsiveContainer width="100%" height="90%">
+                  <BarChart data={revenueData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
+                      <XAxis dataKey="month" tick={{ fill: chartTextColor }} />
+                      <YAxis tick={{ fill: chartTextColor }} />
+                      <Tooltip
+                          contentStyle={{ backgroundColor: isDarkMode ? '#1e293b' : '#ffffff', borderColor: isDarkMode ? '#334155' : '#e2e8f0' }}
+                          cursor={{fill: isDarkMode ? 'rgba(100, 116, 139, 0.2)' : 'rgba(203, 213, 225, 0.5)'}}
+                      />
+                      <Legend wrapperStyle={{ color: chartTextColor }} />
+                      <Bar dataKey="revenue" fill="#4F46E5" name="Revenue (₹)" />
+                  </BarChart>
+              </ResponsiveContainer>
+          </div>
+          <div className="bg-white p-6 rounded-xl shadow-lg border border-slate-100 h-96 dark:bg-slate-800 dark:border-slate-700">
+              <h4 className="font-bold text-lg text-slate-700 mb-4 dark:text-slate-200">Daily Passenger Volume</h4>
+              <ResponsiveContainer width="100%" height="90%">
+                  <LineChart data={passengerVolumeData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
+                      <XAxis dataKey="day" tick={{ fill: chartTextColor }} />
+                      <YAxis tick={{ fill: chartTextColor }} />
+                      <Tooltip 
+                          contentStyle={{ backgroundColor: isDarkMode ? '#1e293b' : '#ffffff', borderColor: isDarkMode ? '#334155' : '#e2e8f0' }}
+                          cursor={{stroke: isDarkMode ? '#475569' : '#94a3b8', strokeWidth: 1, strokeDasharray: '3 3'}}
+                      />
+                      <Legend wrapperStyle={{ color: chartTextColor }} />
+                      <Line type="monotone" dataKey="passengers" stroke="#10b981" strokeWidth={2} name="Passengers" activeDot={{ r: 8 }} />
+                  </LineChart>
+              </ResponsiveContainer>
+          </div>
+    </div>
     </div>
   );
 };
